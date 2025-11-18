@@ -5,7 +5,10 @@ description = ""
 authors = [{ name = "troubleShooter239", email = "morgun2282@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["pvporcupine (>=3.0.5,<4.0.0)", "faster-whisper (>=1.2.1,<2.0.0)"]
+dependencies = [
+    "pvporcupine (>=3.0.5,<4.0.0)",
+    "faster-whisper (>=1.2.1,<2.0.0)",
+]
 
 [tool.poetry]
 packages = [{ include = "x_alice", from = "src" }]
@@ -13,3 +16,16 @@ packages = [{ include = "x_alice", from = "src" }]
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = ["ruff (>=0.14.5,<0.15.0)", "pre-commit (>=4.4.0,<5.0.0)"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+exclude = ["venv", ".venv", "build", "dist"]
+
+lint.select = ["E", "F", "I", "N", "UP", "ANN", "B", "SIM", "C4", "PERF"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
