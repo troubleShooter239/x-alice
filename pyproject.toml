@@ -6,8 +6,9 @@ authors = [{ name = "troubleShooter239", email = "morgun2282@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "pvporcupine (>=3.0.5,<4.0.0)",
     "faster-whisper (>=1.2.1,<2.0.0)",
+    "sounddevice (>=0.5.3,<0.6.0)",
+    "webrtcvad (>=2.0.10,<3.0.0)",
 ]
 
 [tool.poetry]
