@@ -1,0 +1,15 @@
+[project]
+name = "x-alice"
+version = "0.1.0"
+description = ""
+authors = [{ name = "troubleShooter239", email = "morgun2282@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["pvporcupine (>=3.0.5,<4.0.0)", "faster-whisper (>=1.2.1,<2.0.0)"]
+
+[tool.poetry]
+packages = [{ include = "x_alice", from = "src" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
