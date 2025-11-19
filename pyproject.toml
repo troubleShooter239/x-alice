@@ -19,7 +19,11 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
-dev = ["ruff (>=0.14.5,<0.15.0)", "pre-commit (>=4.4.0,<5.0.0)"]
+dev = [
+    "ruff (>=0.14.5,<0.15.0)",
+    "pre-commit (>=4.4.0,<5.0.0)",
+    "mypy (>=1.18.2,<2.0.0)",
+]
 
 [tool.ruff]
 line-length = 120
@@ -30,3 +34,12 @@ lint.select = ["E", "F", "I", "N", "UP", "ANN", "B", "SIM", "C4", "PERF"]
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
+
+[tool.mypy]
+warn_unused_ignores = true
+show_absolute_path = true
+strict = true
+warn_unreachable = true
+warn_no_return = true
+cache_dir = ".mypy_cache"
+exclude = "^data/.*"
