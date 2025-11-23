@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Protocol
 
 import numpy as np
 import sounddevice as sd
+from rapidfuzz import fuzz
 from webrtcvad import Vad
 
 
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from src.utils.types import Callback
-    from stt.transcription import SpeechTranscriberProtocol
+    from stt.transcription import TranscriberProtocol
 
 
 class WakeWordDetectorProtocol(Protocol):
@@ -21,18 +22,19 @@ class WakeWordDetectorProtocol(Protocol):
 
 class WakeWordListenerProtocol(Protocol):
     def set_callback(self, callback: Callback) -> None: ...
-    def run(self) -> None: ...
+    def listen(self) -> None: ...
 
 
 class WakeWordDetector:
     def __init__(
         self,
-        transcriber: SpeechTranscriberProtocol,
-        keyword: str = "алиса",
+        transcriber: TranscriberProtocol,
+        keyword: str,
         sample_rate: int = 16000,
         min_audio_duration: float = 0.5,
         energy_threshold: float = 0.01,
         vad_aggressiveness: int = 2,
+        similarity_threshold: float = 70.0,
     ) -> None:
         self.transcriber = transcriber
         self.keyword = keyword.lower()
@@ -40,6 +42,7 @@ class WakeWordDetector:
         self.min_audio_duration = min_audio_duration
         self.energy_threshold = energy_threshold
         self.vad = Vad(vad_aggressiveness)
+        self.similarity_threshold = similarity_threshold
         self._last_detection_time = 0.0
         self._cooldown_seconds = 2.0
 
@@ -61,12 +64,12 @@ class WakeWordDetector:
         if current_time - self._last_detection_time < self._cooldown_seconds:
             return False
 
-        try:
-            if self.keyword in self.transcriber.transcribe(audio):
+        transcribed_text = self.transcriber.transcribe(audio)
+        for word in transcribed_text.split():
+            if fuzz.ratio(self.keyword, word) > self.similarity_threshold:
                 self._last_detection_time = current_time
                 return True
-        except Exception as e:
-            print(f"Error transcribing audio: {e}")
+
         return False
 
 
@@ -83,6 +86,7 @@ class WakeWordListener:
         self.channels = channels
         self.frame_duration_ms = frame_duration_ms
         self._callback: Callback | None = None
+        self._blocksize = int(self.sample_rate * self.frame_duration_ms / 1000)
 
     def set_callback(self, callback: Callback) -> None:
         self._callback = callback
@@ -92,60 +96,11 @@ class WakeWordListener:
         if self.detector.is_detected(audio) and self._callback:
             self._callback()
 
-    def run(self) -> None:
+    def listen(self) -> None:
         with sd.InputStream(
             channels=self.channels,
             samplerate=self.sample_rate,
-            blocksize=int(self.sample_rate * self.frame_duration_ms / 1000),
-            callback=self._audio_callback,
-        ):
-            try:
-                while True:
-                    sd.sleep(1000)
-            except KeyboardInterrupt:
-                pass
-
-
-class BufferedWakeWordListener:
-    def __init__(
-        self,
-        detector: WakeWordDetectorProtocol,
-        sample_rate: int = 16000,
-        channels: int = 1,
-        frame_duration_ms: int = 30,
-        buffer_duration_seconds: float = 1.5,
-    ) -> None:
-        self.detector = detector
-        self.sample_rate = sample_rate
-        self.channels = channels
-        self.frame_duration_ms = frame_duration_ms
-        self.buffer_duration_samples = int(sample_rate * buffer_duration_seconds)
-        self._audio_buffer: list[np.ndarray] = []
-        self._callback: Callback | None = None
-
-    def set_callback(self, callback: Callback) -> None:
-        self._callback = callback
-
-    def _audio_callback(self, indata: np.ndarray, *_: Sequence[object]) -> None:
-        audio = indata[:, 0]
-        self._audio_buffer.append(audio.copy())
-
-        total_samples = sum(len(chunk) for chunk in self._audio_buffer)
-        while total_samples > self.buffer_duration_samples and len(self._audio_buffer) > 1:
-            self._audio_buffer.pop(0)
-            total_samples = sum(len(chunk) for chunk in self._audio_buffer)
-
-        if len(self._audio_buffer) > 0:
-            buffered_audio = np.concatenate(self._audio_buffer)
-            if self.detector.is_detected(buffered_audio) and self._callback:
-                self._callback()
-                self._audio_buffer.clear()
-
-    def run(self) -> None:
-        with sd.InputStream(
-            channels=self.channels,
-            samplerate=self.sample_rate,
-            blocksize=int(self.sample_rate * self.frame_duration_ms / 1000),
+            blocksize=self._blocksize,
             callback=self._audio_callback,
         ):
             try:

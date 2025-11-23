@@ -1,7 +1,7 @@
 from src.assistant import VoiceAssistant
 from src.recorder.audio import AudioRecorder
 from src.stt.transcription import SpeechTranscriber
-from src.wakeword.detection import BufferedWakeWordListener, WakeWordDetector
+from src.wakeword.detection import WakeWordDetector, WakeWordListener
 
 
 SAMPLE_RATE = 16000
@@ -16,24 +16,18 @@ def main() -> None:
     transcriber = SpeechTranscriber(
         model_name="tiny",
         device="cpu",
-        compute_type="int8",
         language="ru",
-        beam_size=1,
     )
     wake_word_detector = WakeWordDetector(
         transcriber=transcriber,
         keyword=WAKE_KEYWORD,
         sample_rate=SAMPLE_RATE,
-        min_audio_duration=0.5,
-        energy_threshold=0.01,
-        vad_aggressiveness=2,
     )
-    wake_word_listener = BufferedWakeWordListener(
+    wake_word_listener = WakeWordListener(
         detector=wake_word_detector,
         sample_rate=SAMPLE_RATE,
         channels=CHANNELS,
         frame_duration_ms=FRAME_DURATION_MS,
-        buffer_duration_seconds=1.5,
     )
     assistant = VoiceAssistant(
         audio_recorder=audio_recorder,

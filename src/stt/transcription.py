@@ -1,11 +1,11 @@
-from typing import Literal, Protocol
+from typing import BinaryIO, Literal, Protocol
 
 import numpy as np
 from faster_whisper import WhisperModel
 
 
-class SpeechTranscriberProtocol(Protocol):
-    def run(self, audio: np.ndarray, language: str | None, beam_size: int) -> str: ...
+class TranscriberProtocol(Protocol):
+    def transcribe(self, audio: np.ndarray) -> str: ...
 
 
 class SpeechTranscriber:
@@ -37,7 +37,15 @@ class SpeechTranscriber:
         beam_size: int = 1,
     ) -> None:
         self.model = WhisperModel(model_name, device=device, compute_type=compute_type)
+        self.language = language
+        self.beam_size = beam_size
 
-    def run(self, audio: np.ndarray, language: str | None = None, beam_size: int = 1) -> str:
-        segments, _ = self.model.transcribe(audio, beam_size=beam_size, language=language)
-        return "".join([seg.text for seg in segments]).strip()
+    def transcribe(self, audio: str | BinaryIO | np.ndarray) -> str:
+        print("🔍 [DEBUG] Распознавание началось...")
+        segments, _ = self.model.transcribe(audio, beam_size=self.beam_size, language=self.language)
+        text = "".join([seg.text for seg in segments]).strip().lower()
+        if text:
+            print(f"🔍 [DEBUG] Распознано: {text}")
+        else:
+            print("🔍 [DEBUG] Распознано: (пусто)")
+        return text
