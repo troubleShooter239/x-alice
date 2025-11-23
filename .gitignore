@@ -6,6 +6,5 @@ env/
 .env
 *.pem
 *.log
-*mypy_cache/
 .pytest_cache/
 *.lock

@@ -1,7 +1,7 @@
 from src.assistant import VoiceAssistant
 from src.recorder.audio import AudioRecorder
 from src.stt.transcription import SpeechTranscriber
-from src.wakeword.detection import BufferedWakeWordListener, KeywordWakeWordDetector
+from src.wakeword.detection import BufferedWakeWordListener, WakeWordDetector
 
 
 SAMPLE_RATE = 16000
@@ -11,7 +11,7 @@ LISTEN_DURATION = 3.0
 WAKE_KEYWORD = "алиса"
 
 
-def create_assistant() -> VoiceAssistant:
+def main() -> None:
     audio_recorder = AudioRecorder(sample_rate=SAMPLE_RATE, channels=CHANNELS)
     transcriber = SpeechTranscriber(
         model_name="tiny",
@@ -20,7 +20,7 @@ def create_assistant() -> VoiceAssistant:
         language="ru",
         beam_size=1,
     )
-    wake_word_detector = KeywordWakeWordDetector(
+    wake_word_detector = WakeWordDetector(
         transcriber=transcriber,
         keyword=WAKE_KEYWORD,
         sample_rate=SAMPLE_RATE,
@@ -41,11 +41,7 @@ def create_assistant() -> VoiceAssistant:
         wake_word_listener=wake_word_listener,
         listen_duration=LISTEN_DURATION,
     )
-    return assistant
 
-
-def main() -> None:
-    assistant = create_assistant()
     assistant.start()
 
 

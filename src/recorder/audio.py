@@ -5,8 +5,7 @@ import sounddevice as sd
 
 
 class AudioRecorderProtocol(Protocol):
-    def record(self, duration: float) -> np.ndarray:
-        pass
+    def run(self, duration: float) -> np.ndarray: ...
 
 
 class AudioRecorder:
@@ -14,7 +13,7 @@ class AudioRecorder:
         self.sample_rate = sample_rate
         self.channels = channels
 
-    def record(self, duration: float) -> np.ndarray:
+    def run(self, duration: float) -> np.ndarray:
         print("🎙 Speak command...")
         audio = sd.rec(
             int(duration * self.sample_rate),

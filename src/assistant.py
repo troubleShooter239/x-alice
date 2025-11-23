@@ -1,13 +1,16 @@
-from typing import Protocol
+from __future__ import annotations
 
-from src.recorder.audio import AudioRecorderProtocol
-from src.stt.transcription import SpeechTranscriberProtocol
-from src.wakeword.detection import WakeWordListenerProtocol
+from typing import TYPE_CHECKING, Protocol
+
+
+if TYPE_CHECKING:
+    from src.recorder.audio import AudioRecorderProtocol
+    from src.stt.transcription import SpeechTranscriberProtocol
+    from src.wakeword.detection import WakeWordListenerProtocol
 
 
 class VoiceAssistantProtocol(Protocol):
-    def start(self) -> None:
-        pass
+    def start(self) -> None: ...
 
 
 class VoiceAssistant:
@@ -25,14 +28,14 @@ class VoiceAssistant:
 
     def _on_wake_word_detected(self) -> None:
         print("🚀 Wakeword detected!")
-        command_audio = self.audio_recorder.record(self.listen_duration)
-        command_text = self.transcriber.transcribe(command_audio)
+        command_audio = self.audio_recorder.run(self.listen_duration)
+        command_text = self.transcriber.run(command_audio, language="ru", beam_size=1)
         print("📝 Recognized:", command_text)
 
     def start(self) -> None:
         print("🎧 Listening for wake word... Say something loudly to activate.")
         self.wake_word_listener.set_callback(self._on_wake_word_detected)
         try:
-            self.wake_word_listener.listen()
+            self.wake_word_listener.run()
         except KeyboardInterrupt:
             print("Exiting...")
