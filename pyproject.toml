@@ -1,0 +1,41 @@
+[project]
+name = "x-alice"
+version = "0.1.0"
+description = "Voice assistant application"
+authors = [{ name = "troubleShooter239", email = "morgun.nikita@outlook.com" }]
+readme = "README.md"
+requires-python = ">=3.13,<4"
+keywords = ["voice", "assistant", "whisper", "speech"]
+
+dependencies = [
+    "rapidfuzz>=3.14.3",
+    "sounddevice>=0.5.3",
+    "vosk>=0.3.45",
+]
+
+[dependency-groups]
+dev = ["mypy>=1.19.0", "pre-commit>=4.5.0", "ruff>=0.14.8"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py314"
+exclude = [".venv", ".mypy_cache", ".ruff_cache", "build", "dist", "*.egg-info"]
+lint.select = ["E", "F", "I", "N", "UP", "ANN", "B", "SIM", "C4", "PERF"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.mypy]
+python_version = "3.14"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_return_any = true
+warn_unreachable = true
+warn_no_return = true
+strict = true
+show_error_codes = true
+show_column_numbers = true
+show_error_context = true
+show_absolute_path = true
+cache_dir = ".mypy_cache"
